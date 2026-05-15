@@ -3,86 +3,145 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>ダム貯水率</title>
+    <title>ダム情報</title>
 
     <style>
+
         body {
             font-family: sans-serif;
             margin: 40px;
+            background: #f5f5f5;
         }
 
-        .dam-box {
-            border: 1px solid #ccc;
+        h1 {
+            margin-bottom: 30px;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
             padding: 20px;
-            width: 300px;
-            border-radius: 10px;
+            width: 220px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
-        .rate {
-            font-size: 40px;
+        .title {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .value {
+            font-size: 36px;
             font-weight: bold;
         }
+
+        .unit {
+            font-size: 18px;
+        }
+
+        .time {
+            margin-top: 30px;
+            color: gray;
+        }
+
     </style>
 </head>
 
 <body>
 
-    <h1>ダム貯水率</h1>
+    <h1>ダム観測情報</h1>
 
-    <div class="dam-box">
+    <div class="container">
 
-        <div id="damName">読み込み中...</div>
+        <div class="card">
+            <div class="title">貯水位</div>
+            <div class="value">
+                <span id="waterLevel">--</span>
+                <span class="unit">m</span>
+            </div>
+        </div>
 
-        <div class="rate" id="rate">-- %</div>
+        <div class="card">
+            <div class="title">流入量</div>
+            <div class="value">
+                <span id="inflow">--</span>
+                <span class="unit">m³/s</span>
+            </div>
+        </div>
 
+        <div class="card">
+            <div class="title">放流量</div>
+            <div class="value">
+                <span id="outflow">--</span>
+                <span class="unit">m³/s</span>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="time">
+        観測時刻：
+        <span id="obsTime">--</span>
     </div>
 
     <script>
 
         async function loadDamData() {
 
-            /*
-              ここを実際のJSON/API URLへ変更
-            */
-
             const url =
-                "https://example.jp/dam.json";
+                "https://kasen-pref-ibaraki.jp/Sta/GetDamStaData?&obsStaId=476&20260427020106";
 
             try {
 
-                const response =
-                    await fetch(url);
+                const response = await fetch(url);
 
-                const data =
-                    await response.json();
+                const json = await response.json();
 
-                /*
-                  仮のJSON構造
-                */
+                const items =
+                    json.tableData.itemDataList;
 
-                const storage =
-                    data.storage;
+                for (const item of items) {
 
-                const capacity =
-                    data.capacity;
+                    const latest =
+                        item.dataList[item.dataList.length - 1];
 
-                const rate =
-                    storage / capacity * 100;
+                    if (item.dispName === "貯水位") {
 
-                document.getElementById("damName")
-                    .innerText = data.dam_name;
+                        document.getElementById("waterLevel")
+                            .innerText = latest.data;
 
-                document.getElementById("rate")
+                    }
+
+                    if (item.dispName === "流入量") {
+
+                        document.getElementById("inflow")
+                            .innerText = latest.data;
+
+                    }
+
+                    if (item.dispName === "放流量") {
+
+                        document.getElementById("outflow")
+                            .innerText = latest.data;
+
+                    }
+                }
+
+                document.getElementById("obsTime")
                     .innerText =
-                    rate.toFixed(1) + " %";
+                    json.tableData.obsTime;
 
             } catch (error) {
 
                 console.error(error);
 
-                document.getElementById("damName")
-                    .innerText =
-                    "取得失敗";
+                alert("データ取得失敗");
 
             }
         }
