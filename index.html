@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>ダム貯水率</title>
+
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 40px;
+        }
+
+        .dam-box {
+            border: 1px solid #ccc;
+            padding: 20px;
+            width: 300px;
+            border-radius: 10px;
+        }
+
+        .rate {
+            font-size: 40px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>ダム貯水率</h1>
+
+    <div class="dam-box">
+
+        <div id="damName">読み込み中...</div>
+
+        <div class="rate" id="rate">-- %</div>
+
+    </div>
+
+    <script>
+
+        async function loadDamData() {
+
+            /*
+              ここを実際のJSON/API URLへ変更
+            */
+
+            const url =
+                "https://example.jp/dam.json";
+
+            try {
+
+                const response =
+                    await fetch(url);
+
+                const data =
+                    await response.json();
+
+                /*
+                  仮のJSON構造
+                */
+
+                const storage =
+                    data.storage;
+
+                const capacity =
+                    data.capacity;
+
+                const rate =
+                    storage / capacity * 100;
+
+                document.getElementById("damName")
+                    .innerText = data.dam_name;
+
+                document.getElementById("rate")
+                    .innerText =
+                    rate.toFixed(1) + " %";
+
+            } catch (error) {
+
+                console.error(error);
+
+                document.getElementById("damName")
+                    .innerText =
+                    "取得失敗";
+
+            }
+        }
+
+        loadDamData();
+
+    </script>
+
+</body>
+
+</html>
